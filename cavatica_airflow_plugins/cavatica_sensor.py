@@ -29,7 +29,7 @@ class CavaticaTaskSensor(BaseSensorOperator):
     sensor is only meant for getting task run information and parsing the response
     from that specific endpoint.
 
-    cavatica_task_id: the ID assigned to a Cavatica task
+    cavatica_task_id: the ID assigned to a Cavatica task. eligible for Jinja2 templating
         type:       str
         example:    4c8f18a1-3596-49bf-a2a2-b5e598666435
     cavatica_conn_id: name of the Airflow Connection that points to Cavatica.
@@ -42,6 +42,8 @@ class CavaticaTaskSensor(BaseSensorOperator):
 
     returns True or False
     """
+
+    template_fields = ['cavatica_task_id']
 
     @apply_defaults
     def __init__(self,
