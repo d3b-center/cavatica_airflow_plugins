@@ -44,18 +44,17 @@ class CavaticaTaskSensor(BaseSensorOperator):
     """
 
     @apply_defaults
-    def __init__(self, 
-        cavatica_task_id,
-        cavatica_conn_id,
-        cavatica_headers = {},
-        *args,
-        **kwargs
-    ):
+    def __init__(self,
+                 cavatica_task_id,
+                 cavatica_conn_id,
+                 cavatica_headers={},
+                 *args,
+                 **kwargs
+                 ):
         super(CavaticaTaskSensor, self).__init__(*args, **kwargs)
         self.cavatica_task_id = cavatica_task_id
         self.cavatica_conn_id = cavatica_conn_id
         self.cavatica_headers = cavatica_headers
-
 
     def _build_headers(cavatica_conn_id):
         """Generates HTTP headers based on the Cavatica Airflow connection"""
@@ -68,7 +67,6 @@ class CavaticaTaskSensor(BaseSensorOperator):
             msg = f'Unable to generate headers using the cavatica_conn_id: {err}'
             logging.error(msg)
             raise AirflowException(msg)
-
 
     def poke(self, context):
         """Check the status using the GET method.
