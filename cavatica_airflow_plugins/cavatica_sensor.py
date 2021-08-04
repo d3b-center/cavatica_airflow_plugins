@@ -59,6 +59,7 @@ class CavaticaTaskSensor(BaseSensorOperator):
         self.cavatica_conn_id = cavatica_conn_id
         self.cavatica_headers = cavatica_headers
 
+    @staticmethod
     def _build_headers(cavatica_conn_id):
         """Generates HTTP headers based on the Cavatica Airflow connection"""
         try:
@@ -83,7 +84,7 @@ class CavaticaTaskSensor(BaseSensorOperator):
 
         api = HttpHook(method='GET', http_conn_id=self.cavatica_conn_id)
         response = api.run(endpoint=f'/tasks/{self.cavatica_task_id}', headers=self.cavatica_headers)
-        response.check_response()
+        response.raise_for_status()
 
         try:
             response_json = response.json()
