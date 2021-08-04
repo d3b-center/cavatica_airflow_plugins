@@ -43,6 +43,7 @@ class CavaticaTaskSensor(BaseSensorOperator):
     returns True or False
     """
 
+    ui_color = '#6a0dad'
     template_fields = ['cavatica_task_id']
 
     @apply_defaults
