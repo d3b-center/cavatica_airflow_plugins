@@ -77,11 +77,11 @@ class CavaticaTaskSensor(BaseSensorOperator):
         https://docs.cavatica.org/docs/get-details-of-a-task
         """
 
-        if not self.headers:
-            self.headers = self._build_headers(self.cavatica_conn_id)
+        if not self.cavatica_headers:
+            self.cavatica_headers = self._build_headers(self.cavatica_conn_id)
 
         api = HttpHook(method='GET', http_conn_id=self.cavatica_conn_id)
-        response = api.run(endpoint=f'/tasks/{self.cavatica_task_id}', headers=self.headers)
+        response = api.run(endpoint=f'/tasks/{self.cavatica_task_id}', headers=self.cavatica_headers)
         response.check_response()
 
         try:
