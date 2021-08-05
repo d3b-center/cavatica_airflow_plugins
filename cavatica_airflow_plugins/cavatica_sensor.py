@@ -93,7 +93,13 @@ class CavaticaTaskSensor(BaseSensorOperator):
 
         try:
             response_json = response.json()
-            status = response_json["status"].upper()
+            if 'status' in response_json.keys():
+                status = response_json["status"].upper()
+            elif 'state' in response_json.keys():
+                status = response_json["state"].upper()
+            else:
+                msg = 'Only responses with "state" or "status" keys are supported'
+                raise NotImplementedError(msg)
         except Exception as err:
             msg = f'Unable to parse Cavatica API response: {err}'
             logging.error(msg)
