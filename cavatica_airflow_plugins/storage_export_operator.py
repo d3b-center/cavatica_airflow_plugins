@@ -8,7 +8,7 @@ from airflow.hooks.http_hook import HttpHook
 from airflow.models.baseoperator import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from cavatica_sensor import CavaticaTaskSensor
+from cavatica_airflow_plugins.cavatica_sensor import CavaticaTaskSensor
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s:%(message)s', level=logging.DEBUG)
 
@@ -89,16 +89,18 @@ class CavaticaStorageExportOperator(BaseOperator):
                 payload[key] = self.optional_fields[key]
 
         api = HttpHook(method='POST', http_conn_id=self.cavatica_conn_id)
-        response = api.run(endpoint='/storage/exports', data=payload, headers=self.cavatica_headers)
+        response = api.run(endpoint='/storage/exports', json=payload, headers=self.cavatica_headers)
         response.raise_for_status()
 
-        export_task_id = response["id"]
+        export_task_id = response.json()["id"]
 
-        waiting_for_export_success = CavaticaTaskSensor(
-            task_id='waiting_for_export_success',
+        wait_for_export_success = CavaticaTaskSensor(
+            task_id='wait_for_export_success',
             cavatica_task_id=export_task_id,
             cavatica_conn_id=self.cavatica_conn_id,
             cavatica_headers=self.cavatica_headers,
-            poke=30,
+            endpoint='/storage/exports/',
+            poke=10,
             timeout=3600
         )
+        wait_for_export_success.execute(context)
