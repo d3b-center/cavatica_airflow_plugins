@@ -22,12 +22,10 @@ class CavaticaTaskSensor(BaseSensorOperator):
     The authentication provided within the cavatica_conn_id needs to be able to
     access the cavatica_task_id.
 
-    NOTE: headers and an endpoint do not need to be passed to this sensor as they 
-    are created automatically using the cavatica_conn_id. The internal methods
+    NOTE: headers do not need to be passed to this sensor as they 
+    are created automatically using the cavatica_conn_id. The internal method
     _build_headers assumes the Cavatica developer token is stored in the 
-    Password field of the Airflow connection. The endpoint is hardcoded as this
-    sensor is only meant for getting task run information and parsing the response
-    from that specific endpoint.
+    Password field of the Airflow connection.
 
     cavatica_task_id: the ID assigned to a Cavatica task. eligible for Jinja2 templating
         type:       str
@@ -38,6 +36,9 @@ class CavaticaTaskSensor(BaseSensorOperator):
     cavatica_headers: optional, HTTP request headers for the Cavatica API
         type:       dict
         example:    {"Content-Type": "application/json", "X-SBG-Auth-Token": <token>}
+    endpoint: optional, specific GET endpoint the accepts a cavatica_task_id
+        type:       str
+        example:    /tasks/ (default)
 
 
     returns True or False
@@ -51,6 +52,7 @@ class CavaticaTaskSensor(BaseSensorOperator):
                  cavatica_task_id,
                  cavatica_conn_id,
                  cavatica_headers={},
+                 endpoint='/tasks/',
                  *args,
                  **kwargs
                  ):
@@ -58,6 +60,7 @@ class CavaticaTaskSensor(BaseSensorOperator):
         self.cavatica_task_id = cavatica_task_id
         self.cavatica_conn_id = cavatica_conn_id
         self.cavatica_headers = cavatica_headers
+        self.endpoint = endpoint if endpoint.endswith('/') else f'{endpoint}/'
 
     @staticmethod
     def _build_headers(cavatica_conn_id):
@@ -75,15 +78,17 @@ class CavaticaTaskSensor(BaseSensorOperator):
     def poke(self, context):
         """Check the status using the GET method.
 
-        See the Cavatica API documentation for more info:
+        See these supported Cavatica API endpoints' documentation for more info:
         https://docs.cavatica.org/docs/get-details-of-a-task
+        https://docs.cavatica.org/docs/get-details-of-an-import-job-v2
+        https://docs.cavatica.org/docs/get-details-of-an-export-job-v2
         """
 
         if not self.cavatica_headers:
             self.cavatica_headers = self._build_headers(self.cavatica_conn_id)
 
         api = HttpHook(method='GET', http_conn_id=self.cavatica_conn_id)
-        response = api.run(endpoint=f'/tasks/{self.cavatica_task_id}', headers=self.cavatica_headers)
+        response = api.run(endpoint=f'{self.endpoint}{self.cavatica_task_id}', headers=self.cavatica_headers)
         response.raise_for_status()
 
         try:
