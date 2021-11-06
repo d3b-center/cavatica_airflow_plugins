@@ -51,6 +51,7 @@ class CavaticaStorageExportOperator(BaseOperator):
     """
 
     ui_color = '#e811fc'
+    endpoint = '/storage/exports'
 
     @apply_defaults
     def __init__(self,
@@ -89,7 +90,7 @@ class CavaticaStorageExportOperator(BaseOperator):
                 payload[key] = self.optional_fields[key]
 
         api = HttpHook(method='POST', http_conn_id=self.cavatica_conn_id)
-        response = api.run(endpoint='/storage/exports', json=payload, headers=self.cavatica_headers)
+        response = api.run(endpoint=endpoint, json=payload, headers=self.cavatica_headers)
         response.raise_for_status()
 
         export_task_id = response.json()["id"]
@@ -99,7 +100,7 @@ class CavaticaStorageExportOperator(BaseOperator):
             cavatica_task_id=export_task_id,
             cavatica_conn_id=self.cavatica_conn_id,
             cavatica_headers=self.cavatica_headers,
-            endpoint='/storage/exports/',
+            endpoint='{endpoint}/',
             poke=10,
             timeout=3600
         )
