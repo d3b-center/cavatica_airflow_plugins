@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from base64 import b64decode
 import logging
+import time
 
 from airflow.exceptions import AirflowException
 from airflow.hooks.base_hook import BaseHook
@@ -94,6 +95,9 @@ class CavaticaStorageImportOperator(BaseOperator):
         response = api.run(endpoint=self.endpoint, json=payload, headers=self.cavatica_headers)
         response.raise_for_status()
 
+        # NOTE: the task sensor fails PENDING jobs, but storage imports might take some
+        #       time to start up, so we wait here for 3 seconds
+        time.sleep(3)
         import_task_id = response.json()["id"]
 
         wait_for_import_success = CavaticaTaskSensor(
