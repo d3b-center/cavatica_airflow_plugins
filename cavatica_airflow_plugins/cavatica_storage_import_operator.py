@@ -13,7 +13,7 @@ from cavatica_airflow_plugins.cavatica_sensor import CavaticaTaskSensor
 logging.basicConfig(format='%(asctime)s - %(levelname)s:%(message)s', level=logging.DEBUG)
 
 
-class CavaticaStorageImporttOperator(BaseOperator):
+class CavaticaStorageImportOperator(BaseOperator):
     """Uses the Cavatica API to import an S3 file to Cavatica.
 
     https://docs.cavatica.org/docs/start-an-export-job-v2
