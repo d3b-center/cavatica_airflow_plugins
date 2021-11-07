@@ -51,7 +51,6 @@ class CavaticaStorageExportOperator(BaseOperator):
     """
 
     ui_color = '#e811fc'
-    endpoint = '/storage/exports'
 
     @apply_defaults
     def __init__(self,
@@ -61,6 +60,7 @@ class CavaticaStorageExportOperator(BaseOperator):
                  destination_volume,
                  destination_location,
                  optional_fields={},
+                 endpoint='/storage/exports',
                  *args,
                  **kwargs
                  ):
@@ -71,6 +71,7 @@ class CavaticaStorageExportOperator(BaseOperator):
         self.destination_volume = destination_volume
         self.destination_location = destination_location
         self.optional_fields = optional_fields
+        self.endpoint = endpoint
 
     def execute(self, context):
         """Start export job and wait for COMPLETED from CavaticaTaskSensor."""
@@ -90,7 +91,7 @@ class CavaticaStorageExportOperator(BaseOperator):
                 payload[key] = self.optional_fields[key]
 
         api = HttpHook(method='POST', http_conn_id=self.cavatica_conn_id)
-        response = api.run(endpoint=endpoint, json=payload, headers=self.cavatica_headers)
+        response = api.run(endpoint=self.endpoint, json=payload, headers=self.cavatica_headers)
         response.raise_for_status()
 
         export_task_id = response.json()["id"]
@@ -100,7 +101,7 @@ class CavaticaStorageExportOperator(BaseOperator):
             cavatica_task_id=export_task_id,
             cavatica_conn_id=self.cavatica_conn_id,
             cavatica_headers=self.cavatica_headers,
-            endpoint='{endpoint}/',
+            endpoint='{self.endpoint}/',
             poke=10,
             timeout=3600
         )

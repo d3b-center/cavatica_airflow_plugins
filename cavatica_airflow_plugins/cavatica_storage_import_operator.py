@@ -51,7 +51,6 @@ class CavaticaStorageImportOperator(BaseOperator):
     """
 
     ui_color = '#e811fc'
-    endpoint = '/storage/imports'
 
     @apply_defaults
     def __init__(self,
@@ -61,6 +60,7 @@ class CavaticaStorageImportOperator(BaseOperator):
                  source_volume,
                  source_location,
                  optional_fields={},
+                 endpoint='/storage/imports',
                  *args,
                  **kwargs
                  ):
@@ -71,6 +71,7 @@ class CavaticaStorageImportOperator(BaseOperator):
         self.source_volume = source_volume
         self.source_location = source_location
         self.optional_fields = optional_fields
+        self.endpoint = endpoint
 
     def execute(self, context):
         """Start import job and wait for COMPLETED from CavaticaTaskSensor."""
@@ -90,7 +91,7 @@ class CavaticaStorageImportOperator(BaseOperator):
                 payload[key] = self.optional_fields[key]
 
         api = HttpHook(method='POST', http_conn_id=self.cavatica_conn_id)
-        response = api.run(endpoint=endpoint, json=payload, headers=self.cavatica_headers)
+        response = api.run(endpoint=self.endpoint, json=payload, headers=self.cavatica_headers)
         response.raise_for_status()
 
         import_task_id = response.json()["id"]
@@ -100,14 +101,14 @@ class CavaticaStorageImportOperator(BaseOperator):
             cavatica_task_id=import_task_id,
             cavatica_conn_id=self.cavatica_conn_id,
             cavatica_headers=self.cavatica_headers,
-            endpoint=f'{endpoint}/',
+            endpoint=f'{self.endpoint}/',
             poke=10,
             timeout=3600
         )
         wait_for_import_success.execute(context)
 
         api = HttpHook(method='GET', http_conn_id=self.cavatica_conn_id)
-        response = api.run(endpoint=f'{endpoint}/{import_task_id}', headers=self.cavatica_headers)
+        response = api.run(endpoint=f'{self.endpoint}/{import_task_id}', headers=self.cavatica_headers)
         response.raise_for_status()
 
         return response.json()["result"]["id"]
