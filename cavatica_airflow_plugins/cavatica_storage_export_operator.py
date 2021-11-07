@@ -62,6 +62,7 @@ class CavaticaStorageExportOperator(BaseOperator):
                  destination_location,
                  optional_fields={},
                  endpoint='/storage/exports',
+                 sleep=3,
                  *args,
                  **kwargs
                  ):
@@ -73,6 +74,7 @@ class CavaticaStorageExportOperator(BaseOperator):
         self.destination_location = destination_location
         self.optional_fields = optional_fields
         self.endpoint = endpoint
+        self.sleep = sleep
 
     def execute(self, context):
         """Start export job and wait for COMPLETED from CavaticaTaskSensor."""
@@ -97,7 +99,7 @@ class CavaticaStorageExportOperator(BaseOperator):
 
         # NOTE: the task sensor fails PENDING jobs, but storage imports might take some
         #       time to start up, so we wait here for 3 seconds
-        time.sleep(3)
+        time.sleep(self.sleep)
         export_task_id = response.json()["id"]
 
         wait_for_export_success = CavaticaTaskSensor(

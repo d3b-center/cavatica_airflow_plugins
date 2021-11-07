@@ -62,6 +62,7 @@ class CavaticaStorageImportOperator(BaseOperator):
                  source_location,
                  optional_fields={},
                  endpoint='/storage/imports',
+                 sleep=3,
                  *args,
                  **kwargs
                  ):
@@ -73,6 +74,7 @@ class CavaticaStorageImportOperator(BaseOperator):
         self.source_location = source_location
         self.optional_fields = optional_fields
         self.endpoint = endpoint
+        self.sleep = sleep
 
     def execute(self, context):
         """Start import job and wait for COMPLETED from CavaticaTaskSensor."""
@@ -97,7 +99,7 @@ class CavaticaStorageImportOperator(BaseOperator):
 
         # NOTE: the task sensor fails PENDING jobs, but storage imports might take some
         #       time to start up, so we wait here for 3 seconds
-        time.sleep(3)
+        time.sleep(self.sleep)
         import_task_id = response.json()["id"]
 
         wait_for_import_success = CavaticaTaskSensor(
