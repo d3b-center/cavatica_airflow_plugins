@@ -79,7 +79,7 @@ class CavaticaStorageImportOperator(BaseOperator):
     def execute(self, context):
         """Start import job and wait for COMPLETED from CavaticaTaskSensor."""
 
-        payload = { # edit this
+        payload = {
             "source": {
                 "volume": self.source_volume,
                 "location": self.source_location
