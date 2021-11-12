@@ -107,7 +107,7 @@ class CavaticaStorageExportOperator(BaseOperator):
             cavatica_task_id=export_task_id,
             cavatica_conn_id=self.cavatica_conn_id,
             cavatica_headers=self.cavatica_headers,
-            endpoint='{self.endpoint}/',
+            endpoint=f'{self.endpoint}/',
             poke=10,
             timeout=3600
         )
